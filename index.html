@@ -283,10 +283,33 @@
             const originalSvg = document.getElementById(id);
             const clonedSvg = originalSvg.cloneNode(true);
 
-            const width = 2000;
-            const height = 1200;
-            clonedSvg.setAttribute("width", width);
-            clonedSvg.setAttribute("height", height);
+            // Kare PNG boyutu
+            const canvasSize = 1024;
+
+            // SVG viewBox oranını koru (500:300 = 5:3)
+            const viewBoxWidth = 500;
+            const viewBoxHeight = 300;
+            const aspectRatio = viewBoxWidth / viewBoxHeight;
+
+            // Contain mantığı: kare alana sığdır, yamultma
+            let drawWidth, drawHeight;
+            if (aspectRatio > 1) {
+                // Yatay logo — genişlik sınırlayıcı
+                drawWidth = canvasSize;
+                drawHeight = canvasSize / aspectRatio;
+            } else {
+                // Dikey logo — yükseklik sınırlayıcı
+                drawHeight = canvasSize;
+                drawWidth = canvasSize * aspectRatio;
+            }
+
+            // Ortala
+            const offsetX = (canvasSize - drawWidth) / 2;
+            const offsetY = (canvasSize - drawHeight) / 2;
+
+            // SVG'yi çizim boyutuna ayarla
+            clonedSvg.setAttribute("width", drawWidth);
+            clonedSvg.setAttribute("height", drawHeight);
 
             clonedSvg.classList.remove('anim-active');
 
@@ -306,11 +329,13 @@
 
             img.onload = function () {
                 const canvas = document.createElement("canvas");
-                canvas.width = width;
-                canvas.height = height;
+                canvas.width = canvasSize;
+                canvas.height = canvasSize;
                 const ctx = canvas.getContext("2d");
 
-                ctx.drawImage(img, 0, 0, width, height);
+                // Arka planı şeffaf bırak (varsayılan)
+                // Logoyu ortaya çiz, oranını koruyarak
+                ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
 
                 // --- MAC FIX: Canvas'ı Blob'a çevir ---
                 canvas.toBlob(function (blob) {
